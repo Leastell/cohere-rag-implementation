@@ -79,5 +79,3 @@ class RagService:
         # Generate and return response
         chat_response = self.llm_client.generate_chat_response(prompt)
         return {"answer": chat_response, "documents": ranked_docs}
-
-        pass

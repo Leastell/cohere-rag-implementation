@@ -25,11 +25,11 @@ def load_documents(document_dir: Path) -> List[Document]:
             continue
 
         docs.append(
-            {
-                "id": file_path.name,
-                "path": file_path,
-                "text": file_path.read_text(encoding="utf-8"),
-            }
+            Document(
+                id=file_path.name,
+                path=file_path,
+                text=file_path.read_text(encoding="utf-8"),
+            )
         )
 
     return docs
