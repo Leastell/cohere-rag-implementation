@@ -10,9 +10,9 @@ I wrote this as a research task to prepare for a job interview The goal was prim
 
 This service allows users to submit natural-language questions to the `/query` endpoint via POST request. The service will respond with an LLM-generated natural-language response that cites real documents.
 
-At startup, the application generates embeddings for the files in the `documents/` directory using a [Cohere Embedding model](https://docs.cohere.com/docs/embeddings). These models are stored for later reference as requests are made.
+At startup, the application generates embeddings for the files in the `documents/` directory using a [Cohere Embedding model](https://docs.cohere.com/docs/embeddings). These embeddings are stored in an `EmbeddingIndex` for later reference as requests are made.
 
-For each incoming query, the user's prompt is embedded using the same method that we used to generate the document embeddings. Then, using [cosine similarity](https://en.wikipedia.org/wiki/Cosine_similarity), the query embeddings are compared to the cached document embeddings. The top `k` most-similar documents are used to inform a chat response. This response is generated using the [Cohere chat endpoint](https://docs.cohere.com/reference/chat).
+For each incoming query, the user's prompt is embedded using the `LlmClient`. Then, using [cosine similarity](https://en.wikipedia.org/wiki/Cosine_similarity), the query embeddings are compared to the cached document embeddings via the `RagService`. The top `k` most-similar documents are used to inform a chat response, which is generated using the [Cohere chat endpoint](https://docs.cohere.com/reference/chat).
 
 ### Example
 
@@ -42,8 +42,6 @@ Service response[^1]:
 
 [^1]: topK is limited to 1 for demonstration purposes.
 
----
-
 ## Architecture
 
 High-level response generation flow:
@@ -51,15 +49,15 @@ High-level response generation flow:
 ```
 Query
     ↓
-Embed query using Cohere
+LlmClient embeds query using Cohere
     ↓
-Determine cosine similarity against stored document embeddings
+RagService determines cosine similarity against EmbeddingIndex
     ↓
 Select Top-K documents
     ↓
 Build prompt with numbered citations
     ↓
-Generate answer using Cohere
+LlmClient generates answer using Cohere
     ↓
 Return JSON response with answer + citations + context docs
 ```
@@ -68,14 +66,16 @@ Return JSON response with answer + citations + context docs
 
 ```
 ├── app
-│   ├── api.py                  # API Routes
-│   ├── config.py               # Environment variables and application config
-│   ├── llm_utils.py            # Embeddings, retrieval, prompt building, Cohere calls
-│   └── main.py                 # FastAPI initialization and lifespan
+│   ├── api.py                  # FastAPI routes and endpoints
+│   ├── config.py               # Environment config and AppConfig dataclass
+│   ├── llm_client.py           # LlmClient class for Cohere API interactions
+│   ├── main.py                 # FastAPI initialization and lifespan
+│   ├── models.py               # Data models and type definitions
+│   └── rag_service.py          # RagService and EmbeddingIndex classes
 ├── documents                   # .txt documents for RAG reference
 │   └── *.txt
 ├── prompts
-│   └── response_prompt.txt     # Prompt used for LLM response generation
+│   └── response_prompt.txt     # Prompt template for LLM response generation
 ├── README.md
 └── tests
     └── test_llm_utils.py
