@@ -7,7 +7,7 @@ from typing import TypedDict
 
 
 @dataclass
-class Document(BaseModel):
+class Document:
     id: str
     path: Path
     text: str

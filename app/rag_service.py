@@ -14,7 +14,7 @@ class EmbeddingIndex:
 
     @classmethod
     def from_documents(cls, docs: list["Document"], llm: LlmClient) -> "EmbeddingIndex":
-        embeddings = llm.generate_embeddings([d["text"] for d in docs])
+        embeddings = llm.generate_embeddings([d.text for d in docs])
         return cls(docs, embeddings)
 
 
@@ -51,8 +51,8 @@ class RagService:
                 {
                     "rank": rank,
                     "score": float(scores[i]),
-                    "id": doc["id"],
-                    "text": doc["text"],
+                    "id": doc.id,
+                    "text": doc.text,
                 }
             )
         return results
